@@ -2,6 +2,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -9,6 +10,8 @@ import (
 	u "net/url"
 	"os"
 	"time"
+
+	"github.com/joho/godotenv"
 )
 
 // url to pull images http://openweathermap.org/img/wn/10d@2x.png
@@ -36,13 +39,16 @@ type weatherStats struct {
 	Name string `json:"name"`
 }
 
+//TODO: Create landing search page
+//TODO: Create template to hold weather data
+
 // Get current time a user submits an entry
 func getTime() {
 	fmt.Println(time.Now())
 }
 
 //Send request to weather api
-func apiRequest(cityName string, apiKey string) []byte {
+func apiRequest(cityName string, apiKey string) weatherStats {
 
 	// build url query string
 	url, _ := u.Parse("api.openweathermap.org/data/2.5/weather")
@@ -63,11 +69,25 @@ func apiRequest(cityName string, apiKey string) []byte {
 
 	content, _ := ioutil.ReadAll(r.Body)
 
-	return content
+	var weather = weatherStats{}
+
+	json.Unmarshal(content, &weather)
+
+	return weather
 }
 
 func main() {
+
+	// Load Env
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	// Get args
 	args := os.Args
-	apiRequest(args[1], args[2])
+
+	// Send request
+	weather := apiRequest(args[1], os.Getenv("WEATHER_KEY"))
+
 	getTime()
 }
