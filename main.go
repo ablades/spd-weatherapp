@@ -47,6 +47,24 @@ func getTime() {
 	fmt.Println(time.Now())
 }
 
+func readFile(fileName string) {
+	fileContents, err := ioutil.ReadFile("first-post.txt")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Print(fileContents)
+}
+
+func writeToFile(fileName string, content string) {
+	bytesToWrite := []byte(content)
+
+	err := ioutil.WriteFile(fileName, bytesToWrite, 0644)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 //Send request to weather api
 func apiRequest(cityName string, apiKey string) weatherStats {
 
@@ -67,7 +85,10 @@ func apiRequest(cityName string, apiKey string) weatherStats {
 
 	defer r.Body.Close()
 
-	content, _ := ioutil.ReadAll(r.Body)
+	content, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	var weather = weatherStats{}
 
@@ -87,7 +108,9 @@ func main() {
 	args := os.Args
 
 	// Send request
-	weather := apiRequest(args[1], os.Getenv("WEATHER_KEY"))
+	w := apiRequest(args[1], os.Getenv("WEATHER_KEY"))
+
+	fmt.Printf("%+v\n", w)
 
 	getTime()
 }
